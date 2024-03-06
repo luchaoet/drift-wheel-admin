@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { RouterProvider } from 'react-router-dom'
 import router from './router';
+import { ConfigProvider } from 'antd';
+
+import './index.css';
+import '@luchao/base-css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -11,7 +14,10 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    {/* antd全局配置 */}
+    <ConfigProvider componentSize="large">
+      <RouterProvider router={router} />
+    </ConfigProvider>
   </React.StrictMode>
 );
 
