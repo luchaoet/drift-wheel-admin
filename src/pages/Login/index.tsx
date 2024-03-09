@@ -1,16 +1,32 @@
 
 import styles from './index.module.css'
 import classnames from 'classnames';
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
+import request from '../../utils/http'
+import { useBoolean } from 'ahooks'
 
 function App() {
   const navigate = useNavigate();
 
+  const [loading, { setTrue, setFalse }] = useBoolean(false);
+
   const onFinish = (values: any) => {
-    console.log(values)
-    navigate('/home')
+    setTrue()
+    request({
+      url: '/user/login',
+      method: 'post',
+      data: {
+        name: values.name,
+        password: values.password,
+      }
+    }).then((res: any) => {
+      message.success(res.errorMsg)
+      navigate('/home')
+    }).finally(() => {
+      setFalse()
+    })
   }
   return (
     <div className={classnames('g-jc-ai-c g-w-100vw g-h-100vh g-d-f g-fd-c')}>
@@ -21,7 +37,7 @@ function App() {
         </dl>
         <Form onFinish={onFinish}>
           <Form.Item
-            name="username"
+            name="name"
             rules={[{ required: true, message: 'Please input your Username!' }]}
           >
             <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
@@ -37,7 +53,7 @@ function App() {
             />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="g-w-100per">
+            <Button type="primary" htmlType="submit" className="g-w-100per" loading={loading}>
               Log in
             </Button>
           </Form.Item>
