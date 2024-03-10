@@ -1,10 +1,12 @@
 
-import styles from './index.module.css'
 import request from '../../utils/http'
 import { useMount } from 'ahooks';
-import { Tree, Button, Tooltip } from 'antd';
-import { DownOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Tree } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import { useState, useCallback } from 'react'
+import EditButton from './EditButton'
+import AddButton from './AddButton'
+import DeleteButton from './DeleteButton'
 
 function App() {
   const [treeData, setTreeData] = useState([])
@@ -17,21 +19,16 @@ function App() {
     })
   }
 
-  const onSelect = () => { }
-
   const titleRender = useCallback((nodeData: any) => {
     return (
       <div className='g-ai-c g-p-tb-2'>
-        <span className='g-m-r-10'>{nodeData.name}</span>
-        <Tooltip title="编辑/edit">
-          <Button className='g-m-r-10' size="small" icon={<EditOutlined />} />
-        </Tooltip>
-        <Tooltip title="删除/delete">
-          <Button className='g-m-r-10' size="small" icon={<DeleteOutlined />} />
-        </Tooltip>
-        <Tooltip title="删除/delete">
-          <Button size="small" icon={<PlusOutlined />} />
-        </Tooltip>
+        <div style={{ maxWidth: 'calc(100% - 300px)' }}>
+          <p className='g-m-r-10 g-fs-16'>{nodeData.name}</p>
+          <p className='g-e-1 g-m-r-10 g-lh-20 g-fs-14 color-666'>{nodeData.categoryDesc}</p>
+        </div>
+        <EditButton nodeData={nodeData} className="g-m-r-10" onSuccess={getList} />
+        <DeleteButton nodeData={nodeData} className="g-m-r-10" onSuccess={getList} />
+        <AddButton nodeData={nodeData} onSuccess={getList} />
       </div>
     )
 
@@ -45,12 +42,13 @@ function App() {
 
   return (
     <>
-      <p className='g-p-b-20'><Button type="primary">新增一级分类/Add a first-level category</Button></p>
+      <p className='g-p-b-20'>
+        <AddButton buttonProps={{ type: "primary", size: 'large' }} nodeData={{ name: '', desc: '', categoryId: null }} onSuccess={getList}>新增一级分类</AddButton>
+      </p>
       <Tree
         showLine
         switcherIcon={<DownOutlined />}
         defaultExpandAll
-        onSelect={onSelect}
         treeData={treeData}
         blockNode
         fieldNames={{ title: 'name', key: 'categoryId', children: 'children' }}

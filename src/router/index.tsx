@@ -4,6 +4,7 @@ import MainLayout from "../layout/Main";
 import Login from '../pages/Login';
 import Category from "../pages/Category";
 import Product from "../pages/Product";
+import ProductCreateOrEdit from "../pages/ProductCreateOrEdit";
 
 
 const router = createBrowserRouter([
@@ -31,6 +32,14 @@ const router = createBrowserRouter([
       {
         path: "product",
         element: <Product />,
+      },
+      {
+        path: "product/create",
+        element: <ProductCreateOrEdit />,
+      },
+      {
+        path: "product/:id",
+        element: <ProductCreateOrEdit />,
       }
     ]
   }

@@ -12,7 +12,7 @@ const items = [
     key: '/category',
   },
   {
-    label: '商品上传',
+    label: '商品管理',
     key: '/product',
   }
 ]
