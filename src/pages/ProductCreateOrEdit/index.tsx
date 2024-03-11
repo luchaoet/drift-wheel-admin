@@ -128,7 +128,7 @@ function Page() {
         productPhotos: getImageList(productPhotos),
       }
     }
-    console.log(data)
+
     if (categoryId && productId) {
       updateProduct(data)
     } else {
@@ -185,7 +185,7 @@ function Page() {
           action="/file/upload"
           listType="picture-card"
           fileList={formData.bigPic}
-          // onPreview={handlePreview}
+          multiple
           onChange={e => handleUploadChange(e, 'bigPic')}
         >
           <button style={{ border: 0, background: 'none' }} type="button">
@@ -277,6 +277,13 @@ function Page() {
       >
         <Input />
       </Form.Item>
+      <Form.Item
+        label="AVAILABLE SIZE"
+        name="availableSize"
+      >
+        <Input />
+      </Form.Item>
+
 
       <Divider orientation="left">Payment & Shipping Terms</Divider>
       <Form.Item label="Unit Price" name="unitPrice">
@@ -308,7 +315,7 @@ function Page() {
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Button type="primary" htmlType="submit">
-          新增商品
+          {categoryId && productId ? '修改' : '新增'}商品
         </Button>
       </Form.Item>
     </Form>
