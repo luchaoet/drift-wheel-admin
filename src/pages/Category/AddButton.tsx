@@ -3,6 +3,8 @@ import { Button, Tooltip, Form, message, Input, Modal } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react'
 
+const { TextArea } = Input;
+
 function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any) {
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false)
@@ -10,7 +12,7 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
   const editCategory = ({ name, categoryDesc }: any) => {
     request({
       url: `/category`,
-      data: { name, desc: categoryDesc, parentId: nodeData.categoryId || null },
+      data: { name, categoryDesc, parentId: nodeData.categoryId || null },
       method: 'post',
     }).then(() => {
       message.success('编辑成功');
@@ -28,6 +30,13 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
 
   }
 
+  const afterOpenChange = (val: boolean) => {
+    if (!val) {
+      form.setFieldValue('name', '')
+      form.setFieldValue('categoryDesc', '')
+    }
+  }
+
   const title = nodeData.categoryId ? '新增子分类' : '';
 
   return (
@@ -38,7 +47,12 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
         </Button>
       </Tooltip>
 
-      <Modal title={title || '新增一级分类'} open={open} onOk={onOk} onCancel={() => setOpen(false)}>
+      <Modal
+        title={title || '新增一级分类'}
+        open={open} onOk={onOk}
+        onCancel={() => setOpen(false)}
+        afterOpenChange={afterOpenChange}
+      >
         <Form
           layout="vertical"
           initialValues={{ name: '', categoryDesc: '' }}
@@ -55,9 +69,13 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
 
           <Form.Item
             label="描述"
-            name="desc"
+            name="categoryDesc"
           >
-            <Input allowClear />
+            <TextArea
+              autoSize={{ minRows: 3, maxRows: 5 }}
+              allowClear
+            />
+
           </Form.Item>
         </Form>
       </Modal>

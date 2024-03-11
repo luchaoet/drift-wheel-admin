@@ -23,7 +23,7 @@ function App() {
       }
     }).then((res: any) => {
       message.success(res.errorMsg)
-      navigate('/home')
+      navigate('/category')
     }).finally(() => {
       setFalse()
     })

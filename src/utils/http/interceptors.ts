@@ -8,7 +8,7 @@ export class Interceptors {
   instance: AxiosInstance;
   constructor() {
     this.instance = axios.create({
-      // baseURL: 'http://120.55.39.194:8081',
+      baseURL: '',
       timeout: 30000,
       withCredentials: true,
     });

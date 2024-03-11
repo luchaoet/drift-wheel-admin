@@ -1,9 +1,12 @@
+import styles from './index.module.css'
+import classnames from 'classnames';
 import request from '../../utils/http'
 import { useMount, useSetState } from 'ahooks';
 import { Button, Tree, Table, Pagination } from 'antd';
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { DownOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
+import Img from '../components/Img'
 
 function App() {
   const navigate = useNavigate();
@@ -49,7 +52,7 @@ function App() {
     }
   })
 
-  const getProductList = (key: string, pageIndex: number) => {
+  const getProductList = useCallback((key: string, pageIndex: number) => {
     request({
       url: '/product/page',
       data: {
@@ -61,7 +64,7 @@ function App() {
     }).then((res: any) => {
       setTableData({ dataSource: res.data, pager: res.pager })
     })
-  }
+  }, [setTableData])
 
   const pageChange = (page: number) => {
     const key = selectedKeys?.[0];
@@ -71,6 +74,7 @@ function App() {
   useEffect(() => {
     const key = selectedKeys?.[0];
     if (key) {
+
       setTableData({
         pager: {
           currentPage: 1,
@@ -81,7 +85,7 @@ function App() {
       })
       getProductList(key, 1)
     }
-  }, [selectedKeys])
+  }, [selectedKeys, getProductList, setTableData])
 
   const columns = [
     {
@@ -98,13 +102,36 @@ function App() {
       }
     },
     {
+      title: '图片',
+      dataIndex: 'imgList',
+      key: 'imgList',
+      render: (_: any, { imgList }: any) => {
+        const bigPic = imgList?.bigPic || [];
+        return (
+          <div className='g-ai-c'>
+            {
+              bigPic.map((item: string, index: number) => (
+                <Img style={{ width: 50 }} src={item} key={index} alt="" />
+              ))
+            }
+          </div>
+        )
+      }
+    },
+    {
       title: '操作',
       dataIndex: 'width',
       key: 'width',
-      render: (_: any, { productId }: any) => {
+      render: (_: any, { productId, category }: any) => {
+        const categoryId = category.categoryId;
         return (
           <>
-            <Button type="primary" size='small' className='g-m-r-10' onClick={() => navigate(`/product/${productId}`)}>编辑</Button>
+            <Button
+              type="primary"
+              size='small'
+              className='g-m-r-10'
+              onClick={() => navigate(`/product/${categoryId}/${productId}`)}
+            >编辑</Button>
             <Button size='small'>删除</Button>
           </>
         )
@@ -118,7 +145,7 @@ function App() {
         <Button type='primary' onClick={() => navigate('/product/create')}>新增商品</Button>
       </div>
       <div className='g-d-f'>
-        <div style={{ width: 200 }}>
+        <div style={{ width: 300 }} className='g-p-r-20'>
           <Tree
             showLine
             switcherIcon={<DownOutlined />}
@@ -131,7 +158,8 @@ function App() {
             expandedKeys={expandedKeys}
           />
         </div>
-        <div className='g-fg-1 g-mw-0 g-p-l-20'>
+
+        <div className={classnames('g-fg-1 g-mw-0 g-p-l-20', styles.table)}>
           <Table dataSource={tableData.dataSource} columns={columns} pagination={false} />
           <div className='g-p-t-20'>
             <Pagination
