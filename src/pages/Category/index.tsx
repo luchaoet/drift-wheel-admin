@@ -22,7 +22,7 @@ function App() {
   const titleRender = useCallback((nodeData: any) => {
     return (
       <div className='g-ai-c g-p-tb-2 g-fg-1 g-mw-0'>
-        <div style={{ maxWidth: 300 }}>
+        <div style={{ maxWidth: 400 }}>
           <p className='g-m-r-10 g-fs-16' title={nodeData.name}>{nodeData.name}</p>
           <p className='g-e-1 g-m-r-10 g-lh-20 g-fs-14 color-666' title={nodeData.categoryDesc}>{nodeData.categoryDesc}</p>
         </div>

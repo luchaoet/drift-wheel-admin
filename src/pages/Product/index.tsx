@@ -56,7 +56,7 @@ function App() {
     request({
       url: '/product/page',
       data: {
-        queryKey: 'category',
+        queryKey: 'category_id',
         queryValue: key,
         pageSize: tableData.pager.pageSize,
         pageIndex
