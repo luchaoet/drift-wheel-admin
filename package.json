@@ -2,7 +2,7 @@
   "name": "antd-demo",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://120.55.39.194:8081",
+  "proxy": "http://47.120.70.165:8081",
   "dependencies": {
     "@luchao/base-css": "^5.0.0",
     "@testing-library/jest-dom": "^5.17.0",
