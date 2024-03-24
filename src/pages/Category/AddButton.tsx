@@ -11,7 +11,7 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
 
   const editCategory = ({ name, categoryDesc }: any) => {
     request({
-      url: `/category`,
+      url: `/api/category`,
       data: { name, categoryDesc, parentId: nodeData.categoryId || null },
       method: 'post',
     }).then(() => {

@@ -13,7 +13,7 @@ function App() {
   const [treeData, setTreeData] = useState([])
   const getList = () => {
     request({
-      url: '/category/list'
+      url: '/service/category/list'
     }).then(res => {
       setTreeData(res.data)
     })
@@ -54,7 +54,7 @@ function App() {
 
   const getProductList = useCallback((key: string, pageIndex: number) => {
     request({
-      url: '/product/page',
+      url: '/service/product/page',
       data: {
         queryKey: 'category_id',
         queryValue: key,

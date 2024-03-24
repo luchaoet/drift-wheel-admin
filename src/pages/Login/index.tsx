@@ -15,7 +15,7 @@ function App() {
   const onFinish = (values: any) => {
     setTrue()
     request({
-      url: '/user/login',
+      url: '/service/user/login',
       method: 'post',
       data: {
         name: values.name,

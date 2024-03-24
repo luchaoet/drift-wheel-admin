@@ -9,7 +9,7 @@ function App({ className, nodeData, onSuccess }: any) {
 
   const editCategory = ({ name, categoryDesc }: any) => {
     request({
-      url: `/category/${nodeData.categoryId}`,
+      url: `/service/category/${nodeData.categoryId}`,
       data: { name, categoryDesc },
       method: 'put',
     }).then(() => {

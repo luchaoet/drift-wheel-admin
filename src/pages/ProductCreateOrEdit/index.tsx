@@ -14,7 +14,7 @@ function Page() {
 
   useMount(() => {
     request({
-      url: '/category/list'
+      url: '/service/category/list'
     }).then(res => {
       setTreeData(res.data)
     })
@@ -26,7 +26,7 @@ function Page() {
 
   const getProduct = useCallback(() => {
     request({
-      url: '/product',
+      url: '/service/product',
       method: 'get',
       data: {
         productId
@@ -71,7 +71,7 @@ function Page() {
   // 新增商品 http
   const createProduct = ({ categoryId, ...others }: any) => {
     request({
-      url: '/product',
+      url: '/service/product',
       method: 'post',
       data: {
         ...others,
@@ -86,7 +86,7 @@ function Page() {
   // 修改商品
   const updateProduct = (data: any) => {
     request({
-      url: `/product/${productId}`,
+      url: `/service/product/${productId}`,
       method: 'put',
       data
     }).then(() => {

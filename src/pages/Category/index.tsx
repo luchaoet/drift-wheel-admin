@@ -13,7 +13,7 @@ function App() {
 
   const getList = () => {
     request({
-      url: '/category/list'
+      url: '/service/category/list'
     }).then(res => {
       setTreeData(res.data)
     })

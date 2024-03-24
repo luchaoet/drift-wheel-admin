@@ -9,7 +9,7 @@ function App({ className, nodeData, onSuccess }: any) {
   const handleOk = () => {
     setLoading(true)
     request({
-      url: `/category/${nodeData.categoryId}`,
+      url: `/service/category/${nodeData.categoryId}`,
       method: 'DELETE'
     }).then(() => {
       message.success('删除成功');
