@@ -182,7 +182,7 @@ function Page() {
         rules={[{ required: true, message: '请上传' }]}
       >
         <Upload
-          action="/file/upload"
+          action="/service/file/upload"
           listType="picture-card"
           fileList={formData.bigPic}
           multiple
@@ -200,7 +200,7 @@ function Page() {
         rules={[{ required: true, message: '请上传' }]}
       >
         <Upload
-          action="/file/upload"
+          action="/service/file/upload"
           listType="picture-card"
           fileList={formData.productPhotos}
           onChange={e => handleUploadChange(e, 'productPhotos')}
