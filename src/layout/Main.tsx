@@ -26,7 +26,6 @@ const App: React.FC = () => {
 
 
   const handleMenu: MenuProps['onClick'] = ({ key }) => {
-    console.log('click ', key);
     navigate(key)
   };
 
