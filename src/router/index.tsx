@@ -10,7 +10,7 @@ import ProductCreateOrEdit from "../pages/ProductCreateOrEdit";
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />
+    element: <Login />,
   },
   {
     path: "/",
@@ -20,10 +20,6 @@ const router = createBrowserRouter([
         path: "/",
         // 路由重定向, 借助Navigate组件跳转
         element: <Navigate to="login" replace />,
-      },
-      {
-        path: 'login',
-        element: <Login />
       },
       {
         path: "category",
@@ -43,5 +39,7 @@ const router = createBrowserRouter([
       }
     ]
   }
-]);
+], {
+  basename: '/manage'
+});
 export default router;
