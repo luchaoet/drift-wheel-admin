@@ -29,7 +29,7 @@ const App: React.FC = () => {
     navigate(key)
   };
 
-  const pathname = window.location.pathname;
+  const pathname = window.location.pathname.replace(/^\/manage/, '');
 
   return (
     <Layout hasSider>
