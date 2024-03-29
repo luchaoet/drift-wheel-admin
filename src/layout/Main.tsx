@@ -38,7 +38,7 @@ const App: React.FC = () => {
         style={{ overflow: 'auto', height: '100vh' }}
       >
         <div className="g-p-tb-20 g-p-lr-30">
-          <img src="/logo.png" className='g-w-100per' alt="" />
+          <img src="/manage/logo.png" className='g-w-100per' alt="" />
         </div>
         <Menu
           theme="dark"
