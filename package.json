@@ -2,7 +2,7 @@
   "name": "antd-demo",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://43.153.42.169",
+  "proxy": "http://www.drift-wheel.com",
   "dependencies": {
     "@babel/core": "^7.16.0",
     "@luchao/base-css": "^5.0.0",

@@ -157,6 +157,15 @@ function Page() {
     })
   }
 
+  const beforeUpload = (file: any) => {
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error('图片限制小于5M!');
+    }
+
+    return isLt5M ? true : Upload.LIST_IGNORE;
+  }
+
   return (
     <Form
       autoComplete="off"
@@ -200,7 +209,9 @@ function Page() {
           listType="picture-card"
           fileList={formData.bigPic}
           multiple
+          beforeUpload={beforeUpload}
           onChange={e => handleUploadChange(e, 'bigPic')}
+          accept=".jpg, .jpeg, .png"
         >
           <button style={{ border: 0, background: 'none' }} type="button">
             <PlusOutlined />
@@ -215,8 +226,10 @@ function Page() {
       >
         <Upload
           action="/service/file/upload"
+          multiple
           listType="picture-card"
           fileList={formData.productPhotos}
+          beforeUpload={beforeUpload}
           onChange={e => handleUploadChange(e, 'productPhotos')}
         >
           <button style={{ border: 0, background: 'none' }} type="button">

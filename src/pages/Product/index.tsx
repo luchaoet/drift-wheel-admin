@@ -2,7 +2,7 @@ import styles from './index.module.css'
 import classnames from 'classnames';
 import request from '../../utils/http'
 import { useMount, useSetState, useBoolean } from 'ahooks';
-import { Button, Tree, Table, Pagination, message } from 'antd';
+import { Button, Tree, Table, Pagination, message, Popconfirm } from 'antd';
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { DownOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
@@ -147,7 +147,15 @@ function App() {
               className='g-m-r-10'
               onClick={() => navigate(`/product/${categoryId}/${productId}`)}
             >编辑</Button>
-            <Button loading={loading} size='small' onClick={() => handleDelete(productId)}>删除</Button>
+            <Popconfirm
+              title="删除商品"
+              description="删除后无法恢复，确定删除该商品？"
+              onConfirm={() => handleDelete(productId)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button loading={loading} danger size='small'>删除</Button>
+            </Popconfirm>
           </>
         )
       }
