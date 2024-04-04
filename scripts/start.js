@@ -112,6 +112,8 @@ checkBrowsers(paths.appPath, isInteractive)
       host: HOST,
       port,
     };
+    // serverConfig.devMiddleware.publicPath = '/manage'
+    // return console.log(serverConfig)
     const devServer = new WebpackDevServer(serverConfig, compiler);
     // Launch WebpackDevServer.
     devServer.startCallback(() => {

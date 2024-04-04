@@ -3,7 +3,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useParams } from "react-router-dom";
 import request from '../../utils/http'
 import { Form, Input, Button, TreeSelect, Upload, Divider, message } from 'antd'
-import { useMount } from "ahooks";
+import { useMount, useBoolean } from "ahooks";
 import { useNavigate } from "react-router-dom";
 
 function Page() {
@@ -11,6 +11,7 @@ function Page() {
   const [form] = Form.useForm();
   const [treeData, setTreeData] = useState([]);
   const { categoryId, productId } = useParams();
+  const [loading, { setTrue, setFalse }] = useBoolean(false);
 
   useMount(() => {
     request({
@@ -38,13 +39,13 @@ function Page() {
         uid: index,
         name: 'image.png',
         status: 'done',
-        url: process.env.REACT_APP_IMG_URL + url
+        url: (process.env.REACT_APP_IMG_URL || 'http://www.drift-wheel.com:8081') + url
       }))
       const productPhotos = (imgList.productPhotos || []).map((url: string, index: number) => ({
         uid: index,
         name: 'image.png',
         status: 'done',
-        url: process.env.REACT_APP_IMG_URL + url
+        url: (process.env.REACT_APP_IMG_URL || 'http://www.drift-wheel.com:8081') + url
       }))
       const paymentAndShippingTerms = data.productDescription?.paymentAndShippingTerms || {};
       const supplyCapacity = data.productDescription?.supplyCapacity || {};
@@ -70,6 +71,7 @@ function Page() {
 
   // 新增商品 http
   const createProduct = ({ categoryId, ...others }: any) => {
+    setTrue()
     request({
       url: '/service/product',
       method: 'post',
@@ -80,11 +82,14 @@ function Page() {
     }).then(() => {
       message.success('新增成功')
       navigate('/product')
+    }).finally(() => {
+      setFalse()
     })
   }
 
   // 修改商品
   const updateProduct = (data: any) => {
+    setTrue()
     request({
       url: `/service/product/${productId}`,
       method: 'put',
@@ -92,16 +97,25 @@ function Page() {
     }).then(() => {
       message.success('修改成功')
       navigate('/product')
+    }).finally(() => {
+      setFalse()
     })
   }
 
   const getImageList = (data: any) => {
     const list = data.fileList || data;
     return list.map((item: any) => {
-      const url = item.url || item.response.data || '';
-      const reg = new RegExp(process.env.REACT_APP_IMG_URL as string, 'g')
-      return url.replace(reg, '')
+      let url: string = item.url || item.response.data || '';
+      const index = url.indexOf('/img/');
+      if (index >= 0) {
+        url = url.slice(index)
+      }
+      return url
     })
+  }
+
+  const onFinishFailed = (a: any) => {
+    message.warning('存在必填信息未处理')
   }
 
   const onFinish = (values: any) => {
@@ -143,15 +157,15 @@ function Page() {
     })
   }
 
-  // console.log('formData', formData)
-
   return (
     <Form
       autoComplete="off"
       layout="vertical"
       onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
       initialValues={formData}
       form={form}
+      className="g-p-r"
     >
       <Form.Item
         label="分类"
@@ -313,8 +327,8 @@ function Page() {
         <Input />
       </Form.Item>
 
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Button type="primary" htmlType="submit">
+      <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="g-p-s g-b-0 g-l-0 g-w-100per g-bc-w g-p-tb-20">
+        <Button type="primary" htmlType="submit" loading={loading}>
           {categoryId && productId ? '修改' : '新增'}商品
         </Button>
       </Form.Item>

@@ -1,8 +1,8 @@
 import styles from './index.module.css'
 import classnames from 'classnames';
 import request from '../../utils/http'
-import { useMount, useSetState } from 'ahooks';
-import { Button, Tree, Table, Pagination } from 'antd';
+import { useMount, useSetState, useBoolean } from 'ahooks';
+import { Button, Tree, Table, Pagination, message } from 'antd';
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { DownOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,8 @@ import Img from '../components/Img'
 function App() {
   const navigate = useNavigate();
   const [treeData, setTreeData] = useState([])
+  const [loading, { setTrue, setFalse }] = useBoolean(false);
+
   const getList = () => {
     request({
       url: '/service/category/list'
@@ -69,6 +71,19 @@ function App() {
   const pageChange = (page: number) => {
     const key = selectedKeys?.[0];
     getProductList(key, page)
+  }
+
+  const handleDelete = (id: string) => {
+    setTrue()
+    request({
+      url: `/service/product/${id}`,
+      method: 'delete'
+    }).then((res: any) => {
+      message.success('删除成功')
+      pageChange(tableData.pager.currentPage)
+    }).finally(() => {
+      setFalse()
+    })
   }
 
   useEffect(() => {
@@ -132,7 +147,7 @@ function App() {
               className='g-m-r-10'
               onClick={() => navigate(`/product/${categoryId}/${productId}`)}
             >编辑</Button>
-            <Button size='small'>删除</Button>
+            <Button loading={loading} size='small' onClick={() => handleDelete(productId)}>删除</Button>
           </>
         )
       }
