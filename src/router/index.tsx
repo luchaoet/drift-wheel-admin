@@ -5,6 +5,8 @@ import Login from '../pages/Login';
 import Category from "../pages/Category";
 import Product from "../pages/Product";
 import ProductCreateOrEdit from "../pages/ProductCreateOrEdit";
+import Images from "../pages/Images";
+import VehicleGalleries from '../pages/VehicleGalleries'
 
 
 const router = createBrowserRouter([
@@ -36,6 +38,13 @@ const router = createBrowserRouter([
       {
         path: "product/:categoryId/:productId",
         element: <ProductCreateOrEdit />,
+      },
+      {
+        path: "images",
+        element: <Images />,
+      }, {
+        path: "vehicle-galleries",
+        element: <VehicleGalleries />
       }
     ]
   }

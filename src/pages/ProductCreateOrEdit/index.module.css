@@ -1,0 +1,11 @@
+.g-w-auto {
+  width: auto !important;
+}
+
+.select {
+  width: 102px !important;
+  height: 102px !important;
+  padding: 0 !important;
+  vertical-align: top;
+  background-color: rgba(0, 0, 0, 0.02);
+}

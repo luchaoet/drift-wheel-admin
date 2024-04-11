@@ -1,10 +1,12 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { PlusOutlined } from '@ant-design/icons';
 import { useParams } from "react-router-dom";
 import request from '../../utils/http'
-import { Form, Input, Button, TreeSelect, Upload, Divider, message } from 'antd'
+import { Form, Input, Button, TreeSelect, Upload, Divider, message, Modal } from 'antd'
 import { useMount, useBoolean } from "ahooks";
 import { useNavigate } from "react-router-dom";
+import styles from './index.module.css'
+import Image from './Image'
 
 function Page() {
   const navigate = useNavigate();
@@ -166,186 +168,316 @@ function Page() {
     return isLt5M ? true : Upload.LIST_IGNORE;
   }
 
+  const [listImages, setListImages] = useState([]);
+
+  const imageList = useMemo(() => {
+    const formImg = [...(formData.bigPic || []), ...(formData.productPhotos || [])];
+    return listImages.map((item: any) => {
+      return {
+        ...item,
+        isUsed: item.isUsed || !!formImg.find((i: any) => i.url === item.url)
+      }
+    })
+  }, [
+    listImages,
+    formData.bigPic,
+    formData.productPhotos
+  ])
+
+  function getList() {
+    request({
+      url: '/service/file/listImages'
+    }).then(res => {
+      const data = res.data.map((item: any) => ({
+        ...item,
+        url: process.env.REACT_APP_IMG_URL + item.url
+      }))
+      setListImages(data)
+    })
+  }
+
+  useMount(getList)
+
+  const [model, setModelValue] = useState({
+    isModalOpen: false,
+    images: [],
+    key: '',
+  })
+
+  const setModel = (object: any) => {
+    setModelValue({
+      ...model,
+      ...object
+    })
+  }
+
+  const handleOk = () => {
+    const { key, images } = model;
+    setFormData({
+      ...formData,
+      [key]: [
+        ...formData[key],
+        ...images
+      ]
+    })
+    handleCancel()
+  }
+
+  function handleCancel() {
+    setModel({
+      isModalOpen: false,
+      images: [],
+      key: '',
+    })
+  }
+
+  const modalStyles = {
+    body: {
+      maxHeight: 500,
+      overflow: 'auto'
+    },
+  }
+
+  const selectImage = ({ fileName, url }: any) => {
+    setModel({
+      images: [
+        ...model.images,
+        {
+          name: fileName,
+          state: 'done',
+          uid: fileName,
+          url
+        }
+      ]
+    })
+  }
+
   return (
-    <Form
-      autoComplete="off"
-      layout="vertical"
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      initialValues={formData}
-      form={form}
-      className="g-p-r"
-    >
-      <Form.Item
-        label="分类"
-        name="categoryId"
-        rules={[{ required: true, message: '请填写' }]}
+    <>
+      <Form
+        autoComplete="off"
+        layout="vertical"
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+        initialValues={formData}
+        form={form}
+        className="g-p-r"
       >
-        <TreeSelect
-          showSearch
-          style={{ width: '100%' }}
-          dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-          placeholder="Please select"
-          allowClear
-          treeDefaultExpandAll
-          treeData={treeData}
-          fieldNames={{ label: 'name', value: 'categoryId', children: 'children' }}
-        />
-      </Form.Item>
-      <Form.Item
-        label="商品名称"
-        name="title"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="商品主图"
-        name="bigPic"
-        rules={[{ required: true, message: '请上传' }]}
-      >
-        <Upload
-          action="/service/file/upload"
-          listType="picture-card"
-          fileList={formData.bigPic}
-          multiple
-          beforeUpload={beforeUpload}
-          onChange={e => handleUploadChange(e, 'bigPic')}
-          accept=".jpg, .jpeg, .png"
+        <Form.Item
+          label="分类"
+          name="categoryId"
+          rules={[{ required: true, message: '请填写' }]}
         >
-          <button style={{ border: 0, background: 'none' }} type="button">
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </button>
-        </Upload>
-      </Form.Item>
-      <Form.Item
-        label="Detailed Image"
-        name="productPhotos"
-        rules={[{ required: true, message: '请上传' }]}
-      >
-        <Upload
-          action="/service/file/upload"
-          multiple
-          listType="picture-card"
-          fileList={formData.productPhotos}
-          beforeUpload={beforeUpload}
-          onChange={e => handleUploadChange(e, 'productPhotos')}
+          <TreeSelect
+            showSearch
+            style={{ width: '100%' }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            placeholder="Please select"
+            allowClear
+            treeDefaultExpandAll
+            treeData={treeData}
+            fieldNames={{ label: 'name', value: 'categoryId', children: 'children' }}
+          />
+        </Form.Item>
+        <Form.Item
+          label="商品名称"
+          name="title"
+          rules={[{ required: true, message: '请填写' }]}
         >
-          <button style={{ border: 0, background: 'none' }} type="button">
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </button>
-        </Upload>
-      </Form.Item>
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="商品主图"
+          name="bigPic"
+          rules={[{ required: true, message: '请上传' }]}
+        >
+          <div>
+            <Upload
+              action="/service/file/upload"
+              listType="picture-card"
+              fileList={formData.bigPic}
+              multiple
+              beforeUpload={beforeUpload}
+              onChange={e => handleUploadChange(e, 'bigPic')}
+              accept=".jpg, .jpeg, .png"
+              className={styles['g-w-auto']}
+            >
+              <button style={{ border: 0, background: 'none' }} type="button">
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>上传</div>
+              </button>
+            </Upload>
+            <Button type="dashed" className={styles.select} size="small" onClick={() => setModel({ isModalOpen: true, key: 'bigPic', images: [] })}>
+              <PlusOutlined size={10} />
+              <div style={{ marginTop: 6 }} className="g-fs-12">选择</div>
+            </Button>
+          </div>
+        </Form.Item>
+        <Form.Item
+          label="Detailed Image"
+          name="productPhotos"
+          rules={[{ required: true, message: '请上传' }]}
+        >
+          <div>
+            <Upload
+              action="/service/file/upload"
+              multiple
+              listType="picture-card"
+              fileList={formData.productPhotos}
+              beforeUpload={beforeUpload}
+              onChange={e => handleUploadChange(e, 'productPhotos')}
+              className={styles['g-w-auto']}
+            >
+              <button style={{ border: 0, background: 'none' }} type="button">
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>上传</div>
+              </button>
+            </Upload>
+            <Button type="dashed" className={styles.select} size="small" onClick={() => setModel({ isModalOpen: true, key: 'productPhotos', images: [] })}>
+              <PlusOutlined size={10} />
+              <div style={{ marginTop: 6 }} className="g-fs-12">选择</div>
+            </Button>
+          </div>
+        </Form.Item>
 
-      <Divider />
+        <Divider />
 
-      <Form.Item
-        label="Model"
-        name="model"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Place of Origin"
-        name="placeOfOrigin"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Diameter"
-        name="diameter"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Drive Wheel"
-        name="driveWheel"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Material"
-        name="material"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Finishing"
-        name="finishing"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Brand Name"
-        name="brandName"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Width"
-        name="width"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="Car Make"
-        name="carMake"
-        rules={[{ required: true, message: '请填写' }]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        label="AVAILABLE SIZE"
-        name="availableSize"
-      >
-        <Input />
-      </Form.Item>
+        <Form.Item
+          label="MODEL NO."
+          name="model"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="PLACE OF ORIGIN"
+          name="placeOfOrigin"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="SIZE"
+          name="availableSize"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="OFFSET"
+          name="offsetRange"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="PCD"
+          name="pcd"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="CENTER BORE"
+          name="centerBore"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="FINISH"
+          name="finishing"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="BRAND NAME"
+          name="brandName"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="CAR MAKE"
+          name="carMake"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
 
+        {/* <Form.Item
+          label="Drive Wheel"
+          name="driveWheel"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          label="Material"
+          name="material"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item> */}
 
-      <Divider orientation="left">Payment & Shipping Terms</Divider>
-      <Form.Item label="Unit Price" name="unitPrice">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Trade Term" name="tradeTerm">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Payment Terms" name="paymentTerms">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Min. Order" name="minOrder">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Means of Transport" name="meansOfTransport">
-        <Input />
-      </Form.Item>
+        {/* <Form.Item
+          label="Width"
+          name="width"
+          rules={[{ required: true, message: '请填写' }]}
+        >
+          <Input />
+        </Form.Item> */}
 
-      <Divider orientation="left">Supply Capacity</Divider>
-      <Form.Item label="Production Capacity" name="productionCapacity">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Packing" name="packing">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Delivery Date" name="deliveryDate">
-        <Input />
-      </Form.Item>
+        <Divider orientation="left">Payment & Shipping Terms</Divider>
+        <Form.Item label="Unit Price" name="unitPrice">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Trade Term" name="tradeTerm">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Payment Terms" name="paymentTerms">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Min. Order" name="minOrder">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Means of Transport" name="meansOfTransport">
+          <Input />
+        </Form.Item>
 
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="g-p-s g-b-0 g-l-0 g-w-100per g-bc-w g-p-tb-20">
-        <Button type="primary" htmlType="submit" loading={loading}>
-          {categoryId && productId ? '修改' : '新增'}商品
-        </Button>
-      </Form.Item>
-    </Form>
+        <Divider orientation="left">Supply Capacity</Divider>
+        <Form.Item label="Production Capacity" name="productionCapacity">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Packing" name="packing">
+          <Input />
+        </Form.Item>
+        <Form.Item label="Delivery Date" name="deliveryDate">
+          <Input />
+        </Form.Item>
+
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="g-p-s g-b-0 g-l-0 g-w-100per g-bc-w g-p-tb-20">
+          <Button type="primary" htmlType="submit" loading={loading}>
+            {categoryId && productId ? '修改' : '新增'}商品
+          </Button>
+        </Form.Item>
+      </Form>
+
+      <Modal styles={modalStyles} title="选择" open={model.isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+        {
+          imageList.map((item: any) => (
+            <Image
+              key={item.url}
+              url={item.url}
+              onClick={() => selectImage(item)}
+              disabled={item.isUsed}
+              checked={!!model.images.find((i: any) => i.url === item.url)}
+            />
+          ))
+        }
+      </Modal>
+    </>
   )
 }
 

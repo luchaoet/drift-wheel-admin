@@ -12,8 +12,16 @@ const items = [
     key: '/category',
   },
   {
+    label: '商品图片库',
+    key: '/images',
+  },
+  {
     label: '商品管理',
     key: '/product',
+  },
+  {
+    label: '装车效果',
+    key: '/vehicle-galleries',
   }
 ]
 
