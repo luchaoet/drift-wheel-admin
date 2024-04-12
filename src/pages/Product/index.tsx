@@ -125,9 +125,12 @@ function App() {
         return (
           <div className='g-ai-c'>
             {
-              bigPic.map((item: string, index: number) => (
+              bigPic.slice(0, 3).map((item: string, index: number) => (
                 <Img style={{ width: 50 }} src={item} key={index} alt="" />
               ))
+            }
+            {
+              bigPic.length > 3 && <span className='g-fs-20 g-m-l-10'>...</span>
             }
           </div>
         )

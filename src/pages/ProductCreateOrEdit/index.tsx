@@ -1,12 +1,14 @@
 import { useEffect, useCallback, useState, useMemo } from "react";
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useParams } from "react-router-dom";
 import request from '../../utils/http'
-import { Form, Input, Button, TreeSelect, Upload, Divider, message, Modal } from 'antd'
+import { Form, Input, Button, TreeSelect, Upload, Divider, message, Modal, Timeline } from 'antd'
 import { useMount, useBoolean } from "ahooks";
 import { useNavigate } from "react-router-dom";
 import styles from './index.module.css'
 import Image from './Image'
+import moment from 'moment';
+import classnames from 'classnames';
 
 function Page() {
   const navigate = useNavigate();
@@ -122,11 +124,12 @@ function Page() {
 
   const onFinish = (values: any) => {
     const {
-      bigPic, productPhotos, categoryId, category,
+      categoryId, category,
       unitPrice, tradeTerm, paymentTerms, minOrder, meansOfTransport,
       productionCapacity, packing, deliveryDate,
       ...others
     } = values;
+    const { bigPic, productPhotos } = formData;
 
     const data = {
       ...others,
@@ -168,16 +171,31 @@ function Page() {
     return isLt5M ? true : Upload.LIST_IGNORE;
   }
 
-  const [listImages, setListImages] = useState([]);
+  const [listImages, setListImages] = useState([] as any[]);
 
   const imageList = useMemo(() => {
     const formImg = [...(formData.bigPic || []), ...(formData.productPhotos || [])];
-    return listImages.map((item: any) => {
-      return {
-        ...item,
-        isUsed: item.isUsed || !!formImg.find((i: any) => i.url === item.url)
+    const temp = {} as Record<string, Object[]>;
+    for (const l of listImages) {
+      const modifiedTime = l.modifiedTime;
+      const d = {
+        ...l,
+        isUsed: l.isUsed || !!formImg.find((i: any) => i.url === l.url)
       }
-    })
+      if (temp[modifiedTime]) {
+        temp[modifiedTime].push(d)
+      } else {
+        temp[modifiedTime] = new Array(d)
+      }
+    }
+    const data = []
+    for (const key of Object.keys(temp)) {
+      data.push({
+        time: key,
+        data: temp[key],
+      })
+    }
+    return data
   }, [
     listImages,
     formData.bigPic,
@@ -188,11 +206,14 @@ function Page() {
     request({
       url: '/service/file/listImages'
     }).then(res => {
-      const data = res.data.map((item: any) => ({
-        ...item,
-        url: process.env.REACT_APP_IMG_URL + item.url
-      }))
-      setListImages(data)
+      const d = (res.data || []).map((i: any) => ({
+        ...i,
+        modifiedTime: moment(i.modifiedTime).format('YYYY-MM-DD'),
+        _modifiedTime: new Date(i.modifiedTime).getTime(),
+        url: process.env.REACT_APP_IMG_URL + i.url
+      })).sort((a: any, b: any) => b._modifiedTime - a._modifiedTime)
+
+      setListImages(d)
     })
   }
 
@@ -251,6 +272,30 @@ function Page() {
       ]
     })
   }
+
+  const items = useMemo(() => {
+    return imageList.map((item: any) => ({
+      dot: <ClockCircleOutlined className="timeline-clock-icon" />,
+      children: (
+        <div>
+          <p className='g-fs-14'>{item.time}</p>
+          <div className={classnames(styles.images, 'g-p-t-16')}>
+            {
+              item.data.map((d: any, index: number) => (
+                <Image
+                  key={d.url}
+                  url={d.url}
+                  onClick={() => selectImage(d)}
+                  disabled={d.isUsed}
+                  checked={!!model.images.find((i: any) => i.url === d.url)}
+                />
+              ))
+            }
+          </div>
+        </div>
+      ),
+    }))
+  }, [listImages, selectImage, model.images])
 
   return (
     <>
@@ -465,17 +510,10 @@ function Page() {
       </Form>
 
       <Modal styles={modalStyles} title="选择" open={model.isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-        {
-          imageList.map((item: any) => (
-            <Image
-              key={item.url}
-              url={item.url}
-              onClick={() => selectImage(item)}
-              disabled={item.isUsed}
-              checked={!!model.images.find((i: any) => i.url === item.url)}
-            />
-          ))
-        }
+        <Timeline
+          className='g-m-t-40'
+          items={items}
+        />
       </Modal>
     </>
   )
