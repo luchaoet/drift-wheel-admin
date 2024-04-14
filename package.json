@@ -151,6 +151,7 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.0",
     "cross-env": "^7.0.3"
   }
 }

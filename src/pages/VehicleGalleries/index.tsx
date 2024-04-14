@@ -1,36 +1,58 @@
 
-import styles from './index.module.css'
-import classnames from 'classnames';
-import { Button, Modal, Image, Form, Input, Upload, Popconfirm, message } from 'antd';
+// import styles from './index.module.css'
+// import classnames from 'classnames';
+import { Button, Modal, Image, Form, Input, Upload, Popconfirm, message, Table, Pagination } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 // import { useNavigate } from "react-router-dom";
 import request from '../../utils/http'
 import { useBoolean, useMount } from "ahooks";
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { debounce } from 'lodash'
 
 function App() {
   const [form] = Form.useForm();
-  const [data, setData] = useState([])
-  const [loading, { setTrue, setFalse }] = useBoolean(false)
+  const [data, setData] = useState([]);
+  const [page, setPage] = useState({
+    currentPage: 1,
+    pageSize: 20,
+    total: 0
+  })
+  const [loading, { setTrue, setFalse }] = useBoolean(false);
 
-  function getList() {
+  const [queryValue, setQueryValue] = useState('');
+
+  function getList(query = '') {
     request({
-      url: '/service/customer/show'
-    }).then(res => {
+      url: '/service/customer/show/page',
+      data: {
+        queryValue: query || queryValue,
+        pageIndex: page.currentPage,
+        pageSize: page.pageSize,
+      }
+    }).then((res: any) => {
       const data = (res.data || []).map((item: any) => {
         const showInfo = item.showInfo?.[0] || {};
         return {
           ...item,
           ...showInfo,
+          key: showInfo.showId
         }
       })
-      // data.reverse()
       setData(data)
-      // console.log(data)
+      setPage(res.pager)
     })
   }
 
   useMount(getList)
+
+  const debouncedHandleChange = useCallback(debounce((value) => {
+    getList(value)
+  }, 200), [])
+
+  const handleSearch = (value: string) => {
+    setQueryValue(value)
+    debouncedHandleChange(value)
+  }
 
   const [model, setModel] = useState({
     isModalOpen: false,
@@ -136,54 +158,136 @@ function App() {
     })
   }
 
-  const onConfirm = (showId: string) => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState([] as string[]);
+
+  const handlePageChange = (value: number) => {
+    setPage({
+      ...page,
+      currentPage: value
+    })
+    getList()
+  }
+
+  const remove = (data: string[]) => {
     request({
-      url: `/service/customer/show/${showId}`,
-      method: 'DELETE',
+      url: `/service/customer/show/remove`,
+      method: 'post',
+      data
     }).then(() => {
       getList()
-      message.success('删除成功')
+      message.success('删除成功');
+      setSelectedRowKeys([])
     })
   }
 
+  const columns = [
+    {
+      title: '图片',
+      dataIndex: 'image',
+      key: 'showId',
+      render: (_: any, { image }: any) => (
+        <Image
+          width={100}
+          src={process.env.REACT_APP_IMG_URL + image}
+        />
+      )
+    },
+    {
+      title: '车型',
+      dataIndex: 'carModel',
+      key: 'carModel',
+    }, {
+      title: '车型品牌',
+      dataIndex: 'brandName',
+      key: 'brandName',
+    }, {
+      title: '轮毂分类',
+      dataIndex: 'categoryId',
+      key: 'categoryId',
+    }, {
+      title: '轮毂型号',
+      dataIndex: 'productId',
+      key: 'productId',
+    }, {
+      title: '操作',
+      render: (_: any, data: any) => (
+        <>
+          <Button
+            type="primary"
+            size='small'
+            className='g-m-r-10'
+            onClick={() => hanldeEdit(data)}
+          >编辑</Button>
+          <Popconfirm
+            title="删除"
+            description="删除后无法恢复，确定删除？"
+            onConfirm={() => remove([data.showId])}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button danger size='small'>删除</Button>
+          </Popconfirm>
+        </>
+      )
+    }
+  ]
+
+
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (_: React.Key[], selectedRows: any[]) => {
+      const selectedRowKeys: string[] = selectedRows.map((i: any) => i.showId);
+      setSelectedRowKeys(selectedRowKeys)
+    },
+  };
+
   return (
     <>
-      <Button type='primary' onClick={handleAdd}>新增</Button>
-      <div className={classnames(styles.wrapper, 'g-p-t-40')}>
-        {
-          data.map((item: any, index) => (
-            <dl key={index} className='g-p-r'>
-              <dt>
-                <Image
-                  width={'100%'}
-                  src={process.env.REACT_APP_IMG_URL + item.image}
-                />
-              </dt>
-              <dd className='g-p-t-18 g-p-lr-10 g-p-b-6 g-fs-20 g-fw-b g-e-1 g-ta-c'>{item.carModel}</dd>
-              {/* <dd>{item.showId}</dd> */}
-              <dd className='g-ta-c g-p-lr-10 g-fs-12 g-e-1' style={{ color: '#999' }}>{item.categoryId}</dd>
-              <dd className='g-ta-c g-p-lr-10 g-fs-14 g-e-1 g-lh-30 g-p-b-30'>{item.productId}</dd>
-              <dd className={classnames('g-p-a', styles.buttons)}>
-                <Button
-                  type="primary"
-                  size='small'
-                  className='g-m-r-10'
-                  onClick={() => hanldeEdit(item)}
-                >编辑</Button>
-                <Popconfirm
-                  title="删除"
-                  description="删除后无法恢复，确定删除？"
-                  onConfirm={() => onConfirm(item.showId)}
-                  okText="确定"
-                  cancelText="取消"
-                >
-                  <Button danger size='small'>删除</Button>
-                </Popconfirm>
-              </dd>
-            </dl>
-          ))
-        }
+      <div className='g-ai-c'>
+        <Button type='primary' onClick={handleAdd}>新增</Button>
+        <Popconfirm
+          title="删除"
+          description={`确定删除选中的${selectedRowKeys.length}条数据？`}
+          onConfirm={() => remove(selectedRowKeys)}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button
+            type="default"
+            className='g-m-l-10'
+            danger
+            disabled={!selectedRowKeys.length}
+          >删除</Button>
+        </Popconfirm>
+        <Input
+          value={queryValue}
+          placeholder='搜索'
+          className='g-m-l-20'
+          style={{ width: 200 }}
+          onChange={e => handleSearch(e.target.value)}
+          allowClear
+        ></Input>
       </div>
+
+      <Table
+        dataSource={data}
+        columns={columns}
+        rowSelection={{ ...rowSelection }}
+        pagination={false}
+        className='g-m-t-30'
+      ></Table>
+
+      <div className='g-fd-rr g-p-t-20'>
+        <Pagination
+          current={page.currentPage}
+          pageSize={page.pageSize}
+          total={page.total}
+          onChange={handlePageChange}
+        />
+      </div>
+
+
       <Modal
         title={model.formData?.showId ? '编辑' : "新增"}
         open={model.isModalOpen}
@@ -236,7 +340,7 @@ function App() {
             <Input />
           </Form.Item>
           <Form.Item
-            label="车型品牌（BMV/Ferrari等，不展示，用于筛选）"
+            label="车型品牌（BMV/Ferrari等）"
             name="brandName"
             rules={[{ required: true, message: '请填写' }]}
           >
