@@ -352,7 +352,12 @@ function Page() {
                 <div style={{ marginTop: 8 }}>上传</div>
               </button>
             </Upload>
-            <Button type="dashed" className={styles.select} size="small" onClick={() => setModel({ isModalOpen: true, key: 'bigPic', images: [] })}>
+            <Button
+              type="dashed"
+              className={styles.select}
+              size="small"
+              onClick={() => setModel({ isModalOpen: true, key: 'bigPic', images: [] })}
+            >
               <PlusOutlined size={10} />
               <div style={{ marginTop: 6 }} className="g-fs-12">选择</div>
             </Button>
@@ -378,7 +383,12 @@ function Page() {
                 <div style={{ marginTop: 8 }}>上传</div>
               </button>
             </Upload>
-            <Button type="dashed" className={styles.select} size="small" onClick={() => setModel({ isModalOpen: true, key: 'productPhotos', images: [] })}>
+            <Button
+              type="dashed"
+              className={styles.select}
+              size="small"
+              onClick={() => setModel({ isModalOpen: true, key: 'productPhotos', images: [] })}
+            >
               <PlusOutlined size={10} />
               <div style={{ marginTop: 6 }} className="g-fs-12">选择</div>
             </Button>
