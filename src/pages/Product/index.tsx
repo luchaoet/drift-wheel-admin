@@ -17,7 +17,21 @@ function App() {
     request({
       url: '/service/category/list'
     }).then(res => {
-      setTreeData(res.data)
+      const data = res.data.sort((a: any, b: any) => {
+        const aIndex = Number(a.index) ?? 0;
+        const bIndex = Number(b.index) ?? 0;
+        return aIndex - bIndex;
+      })
+
+      for (let index = 0; index < data.length; index++) {
+        const children = data[index].children;
+        data[index].children = children.sort((a: any, b: any) => {
+          const aIndex = Number(a.index) ?? 0;
+          const bIndex = Number(b.index) ?? 0;
+          return aIndex - bIndex;
+        })
+      }
+      setTreeData(data)
     })
   }
 

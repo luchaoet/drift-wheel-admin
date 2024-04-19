@@ -1,5 +1,5 @@
 import request from '../../utils/http'
-import { Button, Tooltip, Form, message, Input, Modal } from 'antd';
+import { Button, Tooltip, Form, message, Input, Modal, InputNumber } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useState } from 'react'
 
@@ -9,10 +9,10 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false)
 
-  const editCategory = ({ name, categoryDesc }: any) => {
+  const editCategory = ({ name, categoryDesc, index }: any) => {
     request({
       url: `/service/category`,
-      data: { name, categoryDesc, parentId: nodeData.categoryId || null },
+      data: { name, categoryDesc, index, parentId: nodeData.categoryId || null },
       method: 'post',
     }).then(() => {
       message.success('编辑成功');
@@ -23,7 +23,11 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
 
   const onOk = () => {
     form.validateFields().then(values => {
-      if (nodeData.name !== values.name || nodeData.categoryDesc !== values.categoryDesc) {
+      if (
+        nodeData.name !== values.name ||
+        nodeData.categoryDesc !== values.categoryDesc ||
+        nodeData.index !== values.index
+      ) {
         editCategory(values)
       }
     })
@@ -33,7 +37,8 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
   const afterOpenChange = (val: boolean) => {
     if (!val) {
       form.setFieldValue('name', '')
-      form.setFieldValue('categoryDesc', '')
+      form.setFieldValue('categoryDesc', '');
+      form.setFieldValue('index', 1);
     }
   }
 
@@ -55,7 +60,7 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
       >
         <Form
           layout="vertical"
-          initialValues={{ name: '', categoryDesc: '' }}
+          initialValues={{ name: '', categoryDesc: '', index: 1 }}
           autoComplete="off"
           form={form}
         >
@@ -65,6 +70,14 @@ function App({ className, nodeData, onSuccess, children, buttonProps = {} }: any
             rules={[{ required: true, message: '请输入分类名称' }]}
           >
             <Input allowClear />
+          </Form.Item>
+
+          <Form.Item
+            label="排序"
+            name="index"
+            rules={[{ required: true, message: '请输入排序' }]}
+          >
+            <InputNumber className='g-w-100per' min={0} max={999} />
           </Form.Item>
 
           <Form.Item

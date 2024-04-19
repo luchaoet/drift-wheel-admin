@@ -1,16 +1,17 @@
 import request from '../../utils/http'
-import { Button, Tooltip, Form, message, Input, Modal } from 'antd';
+import { Button, Tooltip, Form, message, Input, Modal, InputNumber } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { useState } from 'react'
+const { TextArea } = Input;
 
 function App({ className, nodeData, onSuccess }: any) {
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false)
 
-  const editCategory = ({ name, categoryDesc }: any) => {
+  const editCategory = ({ name, categoryDesc, index }: any) => {
     request({
       url: `/service/category/${nodeData.categoryId}`,
-      data: { name, categoryDesc },
+      data: { name, categoryDesc, index },
       method: 'put',
     }).then(() => {
       message.success('编辑成功');
@@ -21,7 +22,11 @@ function App({ className, nodeData, onSuccess }: any) {
 
   const onOk = () => {
     form.validateFields().then(values => {
-      if (nodeData.name !== values.name || nodeData.categoryDesc !== values.categoryDesc) {
+      if (
+        nodeData.name !== values.name ||
+        nodeData.categoryDesc !== values.categoryDesc ||
+        nodeData.index !== values.index
+      ) {
         editCategory(values)
       }
     })
@@ -36,7 +41,7 @@ function App({ className, nodeData, onSuccess }: any) {
       <Modal title="编辑" open={open} onOk={onOk} onCancel={() => setOpen(false)}>
         <Form
           layout="vertical"
-          initialValues={{ name: nodeData.name, categoryDesc: nodeData.categoryDesc }}
+          initialValues={{ name: nodeData.name, categoryDesc: nodeData.categoryDesc, index: nodeData.index || 0 }}
           autoComplete="off"
           form={form}
         >
@@ -49,10 +54,21 @@ function App({ className, nodeData, onSuccess }: any) {
           </Form.Item>
 
           <Form.Item
+            label="排序"
+            name="index"
+            rules={[{ required: true, message: '请输入排序' }]}
+          >
+            <InputNumber className='g-w-100per' min={0} max={999} />
+          </Form.Item>
+          <Form.Item
             label="描述"
             name="categoryDesc"
           >
-            <Input allowClear />
+            <TextArea
+              autoSize={{ minRows: 3, maxRows: 5 }}
+              allowClear
+            />
+
           </Form.Item>
         </Form>
       </Modal>

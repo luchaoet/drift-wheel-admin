@@ -234,13 +234,19 @@ function Page() {
 
   const handleOk = () => {
     const { key, images } = model;
+
+    const value = [
+      ...(formData?.[key] || []),
+      ...images
+    ]
     setFormData({
-      ...formData,
-      [key]: [
-        ...formData[key],
-        ...images
-      ]
+      ...(formData || {}),
+      [key]: value
     })
+
+    form.setFieldValue(key, value);
+    form.validateFields()
+
     handleCancel()
   }
 
